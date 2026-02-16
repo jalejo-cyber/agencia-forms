@@ -5,74 +5,232 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulari</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
+:root {
+  --primary: #d6002a;
+  --input-bg: #f1f1f1;
+  --label-color: #8f8f8f;
+  --text-color: #2d2d2d;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  max-width: 500px;
-  margin: 60px auto;
+  margin: 0;
+  background: #eeeeee;
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
 }
 
-input, button {
+.form-container {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  font-size: 14px;
+  max-width: 520px;
 }
 
-button {
-  background: #d6002a;
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--label-color);
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"] {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--input-bg);
+  font-size: 14px;
+  color: var(--text-color);
+  outline: none;
+}
+
+input:focus {
+  box-shadow: 0 0 0 2px rgba(214, 0, 42, 0.15);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.checkbox-group a {
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #dddddd;
+  background: #f5f5f5;
+  height: 48px;
+  margin-bottom: 18px;
+}
+
+.file-upload button {
+  background: var(--primary);
   color: white;
   border: none;
+  padding: 0 22px;
+  height: 100%;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+}
+
+.file-upload span {
+  padding: 0 16px;
+  font-size: 14px;
+  color: #9c9c9c;
+  flex: 1;
+}
+
+.file-upload input {
+  display: none;
+}
+
+.submit-btn {
+  margin-top: 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  height: 52px;
+  padding: 0 40px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.submit-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 </style>
 </head>
 
 <body>
 
-<h2>Formulari</h2>
+<div class="form-container">
+  <form id="simpleForm">
 
-<form id="form">
+    <div class="form-group">
+      <label>Nom</label>
+      <input type="text" name="nom" required>
+    </div>
 
-  <input type="text" name="nom" placeholder="Nom" required>
-  <input type="email" name="email" placeholder="Correu electrònic" required>
-  <input type="date" name="dataNaixement" required>
-  <input type="text" name="dni" placeholder="DNI" required>
+    <div class="form-group">
+      <label>Correu electrònic</label>
+      <input type="email" name="email" required>
+    </div>
 
-  <label>
-    <input type="checkbox" name="prestacio">
-    Cobro prestació
-  </label>
+    <div class="form-group">
+      <label>Data de naixement</label>
+      <input type="date" name="dataNaixement" required>
+    </div>
 
-  <input type="file" name="fileInput">
+    <div class="form-group">
+      <label>DNI o NIE</label>
+      <input type="text" name="dni" required>
+    </div>
 
-  <button type="submit">Enviar</button>
+    <div class="checkbox-group">
+      <input type="checkbox" name="prestacio" value="si" id="prestacio">
+      <label for="prestacio">
+        Cobro una prestació com a demandant d’ocupació
+      </label>
+    </div>
 
-</form>
+    <div class="file-upload">
+      <button type="button" id="fileBtn">Seleccionar CV</button>
+      <span id="fileName">Cap arxiu seleccionat</span>
+      <input type="file" name="fileInput" id="fileInput">
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="termes" required>
+      <label for="termes">
+        Accepto els <a href="#">termes i condicions</a>
+      </label>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" name="comunicacions" value="si" id="comunicacions">
+      <label for="comunicacions">
+        Accepto rebre comunicacions comercials
+      </label>
+    </div>
+
+    <button type="submit" class="submit-btn">Enviar</button>
+
+  </form>
+</div>
 
 <script>
-const form = document.getElementById("form");
+const fileBtn = document.getElementById("fileBtn");
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
 
-form.addEventListener("submit", async (e) => {
+fileBtn.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", () => {
+  fileName.textContent = fileInput.files.length
+    ? fileInput.files[0].name
+    : "Cap arxiu seleccionat";
+});
+
+document.getElementById("simpleForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
-  const formData = new FormData(form);
+  const formData = new FormData(this);
 
   const res = await fetch("/api/send-simple-form", {
     method: "POST",
     body: formData
   });
 
-  if (res.ok) {
-    alert("Enviat correctament ✅");
-    form.reset();
+  if(res.ok){
+    alert("Enviat correctament");
+    this.reset();
+    fileName.textContent = "Cap arxiu seleccionat";
   } else {
-    alert("Error en l'enviament ❌");
+    alert("Error en l'enviament");
   }
 });
 </script>
 
 </body>
 </html>
-
-<!-- redeploy -->
