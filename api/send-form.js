@@ -38,6 +38,7 @@ export default async function handler(req, res) {
       fields.collectiu !== "Cap"
         ? "Sí"
         : "No";
+   
 
     // 📎 ADJUNT
     const attachments = [];
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
         <tr><td><strong>Telèfon</strong></td><td>${fields.telefon}</td></tr>
         <tr><td><strong>Població</strong></td><td>${fields.poblacio}</td></tr>
         <tr><td><strong>Prestació</strong></td><td>${fields.prestacio}</td></tr>
-        <tr><td><strong>Col·lectiu</strong></td><td>${fields.collectiu}</td></tr>
+        <tr><td><strong>Col·lectiu</strong></td><td>${teCollectiu}</td></tr>
         <tr><td><strong>Sector</strong></td><td>${fields.sector}</td></tr>
         <tr><td><strong>Disponibilitat</strong></td><td>${fields.disponibilitat}</td></tr>
         <tr><td><strong>Acceptació legal</strong></td><td>${fields.legal}</td></tr>
