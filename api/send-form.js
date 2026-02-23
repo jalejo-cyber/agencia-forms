@@ -124,7 +124,7 @@ body: JSON.stringify({
   sector: toUpper(fields.sector),
   disponibilitat: toUpper(fields.disponibilitat)
 })
-      })
+      
     });
 
     if (!googleRes.ok) {
