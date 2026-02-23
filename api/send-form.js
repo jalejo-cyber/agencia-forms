@@ -80,7 +80,7 @@ export default async function handler(req, res) {
     const htmlTable = `
       <h2>Nova inscripció - Agència de Col·locació</h2>
       <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:Arial;">
-        <tr><td><strong>Tipus document</strong></td><td>${dniValue}</td></tr>
+  
         <tr><td><strong>DNI/NIE</strong></td><td>${dniValue}</td></tr>
         <tr><td><strong>Nom</strong></td><td>${fields.nom}</td></tr>
         <tr><td><strong>Cognom 1</strong></td><td>${fields.cognom1}</td></tr>
