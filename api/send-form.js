@@ -98,29 +98,32 @@ export default async function handler(req, res) {
     });
 
     // 📊 ENVIAR A GOOGLE SHEETS
+    const toUpper = (value) =>
+  typeof value === "string" ? value.toUpperCase() : value;
     const googleRes = await fetch(process.env.GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
      const dataFormatada = (fields.dataNaixement || "").replaceAll("-", "");
 
 body: JSON.stringify({
-  dni: fields.dni,
-  nom: fields.nom,
-  cognom1: fields.cognom1,
-  cognom2: fields.cognom2,
+  dni: toUpper(fields.dni),
+  nom: toUpper(fields.nom),
+  cognom1: toUpper(fields.cognom1),
+  cognom2: toUpper(fields.cognom2),
   dataNaixement: dataFormatada,
-        genere: fields.genere,
-        estudis: fields.estudis,
-        discapacitat: fields.discapacitat,
-        teNIE,
-        teCollectiu,
-        feina2mesos: fields.feina2mesos,
-        email: fields.email,
-        telefon: fields.telefon,
-        poblacio: fields.poblacio,
-        prestacio: fields.prestacio,
-        sector: fields.sector,
-        disponibilitat: fields.disponibilitat
+  genere: toUpper(fields.genere),
+  estudis: toUpper(fields.estudis),
+  discapacitat: toUpper(fields.discapacitat),
+  teNIE: toUpper(teNIE),
+  teCollectiu: toUpper(teCollectiu),
+  feina2mesos: toUpper(fields.feina2mesos),
+  email: toUpper(fields.email),
+  telefon: toUpper(fields.telefon),
+  poblacio: toUpper(fields.poblacio),
+  prestacio: toUpper(fields.prestacio),
+  sector: toUpper(fields.sector),
+  disponibilitat: toUpper(fields.disponibilitat)
+})
       })
     });
 
