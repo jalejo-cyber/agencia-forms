@@ -101,12 +101,14 @@ export default async function handler(req, res) {
     const googleRes = await fetch(process.env.GOOGLE_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dni: fields.dni,
-        nom: fields.nom,
-        cognom1: fields.cognom1,
-        cognom2: fields.cognom2,
-        dataNaixement: fields.dataNaixement,
+     const dataFormatada = (fields.dataNaixement || "").replaceAll("-", "");
+
+body: JSON.stringify({
+  dni: fields.dni,
+  nom: fields.nom,
+  cognom1: fields.cognom1,
+  cognom2: fields.cognom2,
+  dataNaixement: dataFormatada,
         genere: fields.genere,
         estudis: fields.estudis,
         discapacitat: fields.discapacitat,
