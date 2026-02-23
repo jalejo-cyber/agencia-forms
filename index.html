@@ -377,115 +377,127 @@ Si vostè llegeix aquest missatge i no és el destinatari assenyalat, l'empleat 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
-function validarDNINIE(valor) {
+  // ===== ELEMENTS =====
+  const form = document.getElementById("agenciaForm");
+  const modal = document.getElementById("successModal");
+  const fileBtn = document.getElementById("fileBtn");
+  const fileInput = document.getElementById("fileInput");
+  const fileName = document.getElementById("fileName");
+  const dniInput = document.querySelector("input[name='dni']");
+  const discapacitatSelect = document.querySelector("select[name='discapacitat']");
+  const collectiuSelect = document.querySelector("select[name='collectiu']");
 
-  valor = valor.toUpperCase().trim();
+  // ===== VALIDACIÓ DNI/NIE =====
+  function validarDNINIE(valor) {
 
-  const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+    valor = valor.toUpperCase().trim();
+    const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
 
-  // DNI
-  if (/^[0-9]{8}[A-Z]$/.test(valor)) {
-    const numero = parseInt(valor.substring(0, 8), 10);
-    const letra = valor.charAt(8);
-    return letras[numero % 23] === letra;
+    if (/^[0-9]{8}[A-Z]$/.test(valor)) {
+      const numero = parseInt(valor.substring(0, 8), 10);
+      const letra = valor.charAt(8);
+      return letras[numero % 23] === letra;
+    }
+
+    if (/^[XYZ][0-9]{7}[A-Z]$/.test(valor)) {
+      let numero = valor.replace("X", "0")
+                        .replace("Y", "1")
+                        .replace("Z", "2");
+      numero = parseInt(numero.substring(0, 8), 10);
+      const letra = valor.charAt(8);
+      return letras[numero % 23] === letra;
+    }
+
+    return false;
   }
 
-  // NIE
-  if (/^[XYZ][0-9]{7}[A-Z]$/.test(valor)) {
-    let numero = valor.replace("X", "0")
-                      .replace("Y", "1")
-                      .replace("Z", "2");
-    numero = parseInt(numero.substring(0, 8), 10);
-    const letra = valor.charAt(8);
-    return letras[numero % 23] === letra;
-  }
+  // ===== VALIDACIÓ EN TEMPS REAL =====
+  dniInput.addEventListener("input", function(){
 
-  return false;
-}
+    const valor = this.value;
 
-const discapacitatSelect = document.querySelector("select[name='discapacitat']");
-const collectiuSelect = document.querySelector("select[name='collectiu']");
+    if(valor.length === 0){
+      this.style.borderColor = "#e2e2e2";
+      this.style.background = "#fafafa";
+      return;
+    }
 
-if (discapacitatSelect && collectiuSelect) {
-
-  discapacitatSelect.addEventListener("change", function () {
-
-    if (this.value === "Sí") {
-
-      // Assignem un valor perquè s'enviï correctament
-      collectiuSelect.value = "Dona";
-
-      // Bloqueig visual però SENSE disabled
-      collectiuSelect.style.pointerEvents = "none";
-      collectiuSelect.style.opacity = "0.6";
-
+    if(validarDNINIE(valor)){
+      this.style.borderColor = "#28a745";
+      this.style.background = "#f0fff4";
     } else {
-
-      // Tornem a activar
-      collectiuSelect.style.pointerEvents = "auto";
-      collectiuSelect.style.opacity = "1";
-
+      this.style.borderColor = "#d6002a";
+      this.style.background = "#fff0f0";
     }
 
   });
 
-}
-  
-  const fileBtn = document.getElementById("fileBtn");
-  const fileInput = document.getElementById("fileInput");
-  const fileName = document.getElementById("fileName");
-  const modal = document.getElementById("successModal");
-  const form = document.getElementById("agenciaForm");
+  // ===== BLOQUEIG COL·LECTIU SI DISCAPACITAT =====
+  discapacitatSelect.addEventListener("change", function(){
 
-  fileBtn.addEventListener("click", () => fileInput.click());
+    if(this.value === "Sí"){
+      collectiuSelect.value = "Cap";
+      collectiuSelect.style.pointerEvents = "none";
+      collectiuSelect.style.opacity = "0.6";
+    } else {
+      collectiuSelect.style.pointerEvents = "auto";
+      collectiuSelect.style.opacity = "1";
+    }
 
-  fileInput.addEventListener("change", () => {
+  });
+
+  // ===== FILE UPLOAD =====
+  fileBtn.addEventListener("click", function(){
+    fileInput.click();
+  });
+
+  fileInput.addEventListener("change", function(){
     fileName.textContent = fileInput.files.length
       ? fileInput.files[0].name
       : "Cap arxiu seleccionat";
   });
 
+  // ===== SUBMIT =====
   form.addEventListener("submit", async function(e){
 
-  const dniInput = document.querySelector("input[name='dni']");
-  const dniValor = dniInput.value;
+    e.preventDefault();
 
-  // 🔎 VALIDACIÓ DNI / NIE
-form.addEventListener("submit", async function(e){
-
-  e.preventDefault();
-
-  const dniInput = document.querySelector("input[name='dni']");
-  const dniValor = dniInput.value;
-
-  if(!validarDNINIE(dniValor)){
-    alert("El DNI/NIE introduït no és vàlid.");
-    dniInput.focus();
-    return;
-  }
-
-  const formData = new FormData(this);
-
-  try{
-    const res = await fetch("/api/send-form", {
-      method: "POST",
-      body: formData
-    });
-
-    if(res.ok){
-      modal.classList.add("active");
-      this.reset();
-      fileName.textContent = "Cap arxiu seleccionat";
-    } else {
-      alert("Error en l'enviament");
+    if(!validarDNINIE(dniInput.value)){
+      alert("El DNI/NIE introduït no és vàlid.");
+      dniInput.focus();
+      return;
     }
 
-  } catch(err){
-    alert("Error de connexió");
-  }
+    const formData = new FormData(this);
+
+    try{
+      const res = await fetch("/api/send-form", {
+        method: "POST",
+        body: formData
+      });
+
+      if(res.ok){
+        modal.classList.add("active");
+        this.reset();
+        fileName.textContent = "Cap arxiu seleccionat";
+        dniInput.style.borderColor = "#e2e2e2";
+        dniInput.style.background = "#fafafa";
+      } else {
+        alert("Error en l'enviament");
+      }
+
+    } catch(err){
+      alert("Error de connexió");
+    }
+
+  });
+
+  // ===== TANCAR MODAL =====
+  window.closeModal = function(){
+    modal.classList.remove("active");
+  };
 
 });
-
 </script>
 
 </body>
