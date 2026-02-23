@@ -10,7 +10,6 @@ export const config = {
 
 export default async function handler(req, res) {
   try {
-
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Method not allowed" });
     }
@@ -29,27 +28,41 @@ export default async function handler(req, res) {
     });
 
     // 🔎 CLASSIFICACIONS AUTOMÀTIQUES
-    const dniValue = fields.dni || "";
+    const dniValue = Array.isArray(fields.dni) ? fields.dni[0] : fields.dni || "";
     const tipusDocument = /^[0-9]/.test(dniValue) ? "DNI" : "NIE";
     const teNIE = /^[0-9]/.test(dniValue) ? "No" : "Sí";
 
-    const teCollectiu =
-  fields.discapacitat === "Sí" ||
-  (fields.collectiu && fields.collectiu !== "Cap")
-    ? "Sí"
-    : "No";
-   
+    const discapacitatValue = Array.isArray(fields.discapacitat)
+      ? fields.discapacitat[0]
+      : fields.discapacitat;
 
-    // 📎 ADJUNT
+    const collectiuValue = Array.isArray(fields.collectiu)
+      ? fields.collectiu[0]
+      : fields.collectiu;
+
+    const teCollectiu =
+      discapacitatValue === "Sí" ||
+      (collectiuValue && collectiuValue !== "Cap")
+        ? "Sí"
+        : "No";
+
+    // 📎 ADJUNT + BASE64 PER DRIVE
     const attachments = [];
+    let cvBase64 = "";
+    let cvFileName = "";
 
     if (files.cv) {
       const file = Array.isArray(files.cv) ? files.cv[0] : files.cv;
 
       if (file?.filepath) {
+        const fileBuffer = fs.readFileSync(file.filepath);
+
+        cvBase64 = fileBuffer.toString("base64");
+        cvFileName = file.originalFilename || "CV.pdf";
+
         attachments.push({
-          filename: file.originalFilename || "CV.pdf",
-          content: fs.readFileSync(file.filepath),
+          filename: cvFileName,
+          content: fileBuffer,
         });
       }
     }
@@ -67,8 +80,8 @@ export default async function handler(req, res) {
     const htmlTable = `
       <h2>Nova inscripció - Agència de Col·locació</h2>
       <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:Arial;">
-        <tr><td><strong>Tipus document</strong></td><td>${tipusDocument}</td></tr>
-        <tr><td><strong>DNI/NIE</strong></td><td>${fields.dni}</td></tr>
+        <tr><td><strong>Tipus document</strong></td><td>${dniValue}</td></tr>
+        <tr><td><strong>DNI/NIE</strong></td><td>${dniValue}</td></tr>
         <tr><td><strong>Nom</strong></td><td>${fields.nom}</td></tr>
         <tr><td><strong>Cognom 1</strong></td><td>${fields.cognom1}</td></tr>
         <tr><td><strong>Cognom 2</strong></td><td>${fields.cognom2 || "-"}</td></tr>
@@ -97,54 +110,54 @@ export default async function handler(req, res) {
       attachments,
     });
 
-    // 📊 ENVIAR A GOOGLE SHEETS
-   // 🔹 NORMALITZADOR SEGUR (evita arrays i undefined)
-const normalizeValue = (value) => {
-  if (Array.isArray(value)) value = value[0];
-  if (typeof value === "string") return value;
-  return "";
-};
+    // 🔹 NORMALITZADOR SEGUR
+    const normalizeValue = (value) => {
+      if (Array.isArray(value)) value = value[0];
+      if (typeof value === "string") return value;
+      return "";
+    };
 
-// 🔹 MAJÚSCULES SEGURES
-const toUpper = (value) => normalizeValue(value).toUpperCase();
+    const toUpper = (value) => normalizeValue(value).toUpperCase();
+    const dataFormatada = normalizeValue(fields.dataNaixement).replace(/-/g, "");
 
-// 🔹 DATA SEGURA
-const dataFormatada = normalizeValue(fields.dataNaixement).replace(/-/g, "");
+    // 📊 ENVIAR A GOOGLE SHEETS + DRIVE
+    const googleRes = await fetch(process.env.GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dni: toUpper(fields.dni),
+        nom: toUpper(fields.nom),
+        cognom1: toUpper(fields.cognom1),
+        cognom2: toUpper(fields.cognom2),
+        dataNaixement: dataFormatada,
+        genere: toUpper(fields.genere),
+        estudis: toUpper(fields.estudis),
+        discapacitat: toUpper(fields.discapacitat),
+        teNIE: toUpper(teNIE),
+        teCollectiu: toUpper(teCollectiu),
+        feina2mesos: toUpper(fields.feina2mesos),
+        email: toUpper(fields.email),
+        telefon: toUpper(fields.telefon),
+        poblacio: toUpper(fields.poblacio),
+        prestacio: toUpper(fields.prestacio),
+        sector: toUpper(fields.sector),
+        disponibilitat: toUpper(fields.disponibilitat),
 
-// 🔹 ENVIAMENT A GOOGLE SHEETS
-const googleRes = await fetch(process.env.GOOGLE_SCRIPT_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    dni: toUpper(fields.dni),
-    nom: toUpper(fields.nom),
-    cognom1: toUpper(fields.cognom1),
-    cognom2: toUpper(fields.cognom2),
-    dataNaixement: dataFormatada,
-    genere: toUpper(fields.genere),
-    estudis: toUpper(fields.estudis),
-    discapacitat: toUpper(fields.discapacitat),
-    teNIE: toUpper(teNIE),
-    teCollectiu: toUpper(teCollectiu),
-    feina2mesos: toUpper(fields.feina2mesos),
-    email: toUpper(fields.email),
-    telefon: toUpper(fields.telefon),
-    poblacio: toUpper(fields.poblacio),
-    prestacio: toUpper(fields.prestacio),
-    sector: toUpper(fields.sector),
-    disponibilitat: toUpper(fields.disponibilitat)
-  })
-});
+        // 🔽 NOU PER DRIVE
+        cvBase64: cvBase64,
+        cvFileName: cvFileName
+      })
+    });
 
-if (!googleRes.ok) {
-  const errorText = await googleRes.text();
-  console.error("Google Sheets error:", errorText);
-}
+    if (!googleRes.ok) {
+      const errorText = await googleRes.text();
+      console.error("Google Sheets error:", errorText);
+    }
 
-return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true });
 
-} catch (err) {
-  console.error("ERROR REAL:", err);
-  return res.status(500).json({ error: err.message || "Server error" });
-}
+  } catch (err) {
+    console.error("ERROR REAL:", err);
+    return res.status(500).json({ error: err.message || "Server error" });
+  }
 }
