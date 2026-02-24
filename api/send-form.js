@@ -85,36 +85,39 @@ export default async function handler(req, res) {
     const toUpper = (value) => normalizeValue(value).toUpperCase();
     const dataFormatada = normalizeValue(fields.dataNaixement).replace(/-/g, "");
 
-    const googleRes = await fetch(process.env.GOOGLE_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dni: toUpper(fields.dni),
-        nom: toUpper(fields.nom),
-        cognom1: toUpper(fields.cognom1),
-        cognom2: toUpper(fields.cognom2),
-        dataNaixement: dataFormatada,
-        genere: toUpper(fields.genere),
-        estudis: toUpper(fields.estudis),
-        discapacitat: toUpper(fields.discapacitat),
-        teNIE: toUpper(teNIE),
-        teCollectiu: toUpper(teCollectiu),
-        feina2mesos: toUpper(fields.feina2mesos),
-        email: toUpper(fields.email),
-        telefon: toUpper(fields.telefon),
-        poblacio: toUpper(fields.poblacio),
-        prestacio: toUpper(fields.prestacio),
-        sector: toUpper(fields.sector),
-        disponibilitat: toUpper(fields.disponibilitat),
-        cvBase64,
-        cvFileName
-      }),
-    });
+const googleRes = await fetch(process.env.GOOGLE_SCRIPT_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    dni: toUpper(fields.dni),
+    nom: toUpper(fields.nom),
+    cognom1: toUpper(fields.cognom1),
+    cognom2: toUpper(fields.cognom2),
+    dataNaixement: dataFormatada,
+    genere: toUpper(fields.genere),
+    estudis: toUpper(fields.estudis),
+    discapacitat: toUpper(fields.discapacitat),
+    teNIE: toUpper(teNIE),
+    teCollectiu: toUpper(teCollectiu),
+    feina2mesos: toUpper(fields.feina2mesos),
+    email: toUpper(fields.email),
+    telefon: toUpper(fields.telefon),
+    poblacio: toUpper(fields.poblacio),
+    prestacio: toUpper(fields.prestacio),
+    sector: toUpper(fields.sector),
+    disponibilitat: toUpper(fields.disponibilitat),
+    cvBase64,
+    cvFileName
+  }),
+});
 
-    if (!googleRes.ok) {
-      const errorText = await googleRes.text();
-      console.error("Google Sheets error:", errorText);
-    }
+const googleText = await googleRes.text();
+console.log("GOOGLE STATUS:", googleRes.status);
+console.log("GOOGLE TEXT:", googleText);
+
+if (!googleRes.ok) {
+  console.error("Google Sheets error:", googleText);
+}
 
     return res.status(200).json({ ok: true });
 
