@@ -68,14 +68,6 @@ export default async function handler(req, res) {
       },
     });
 
-
-
- // Normalitzador per evitar arrays
-const normalizeValue = (value) => {
-  if (Array.isArray(value)) return value[0];
-  return value || "";
-};
-
 // Normalitzador per evitar arrays
 const normalizeValue = (value) => {
   if (Array.isArray(value)) return value[0];
