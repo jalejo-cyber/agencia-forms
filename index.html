@@ -460,38 +460,43 @@ document.addEventListener("DOMContentLoaded", function(){
   // ===== SUBMIT =====
   form.addEventListener("submit", async function(e){
 
-    e.preventDefault();
+  e.preventDefault();
 
-    if(!validarDNINIE(dniInput.value)){
-      alert("El DNI/NIE introduït no és vàlid.");
-      dniInput.focus();
-      return;
+  if(!validarDNINIE(dniInput.value)){
+    alert("El DNI/NIE introduït no és vàlid.");
+    dniInput.focus();
+    return;
+  }
+
+  // ✅ VALIDACIÓ CV
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert("Has d'adjuntar el CV abans d'enviar la inscripció.");
+    return;
+  }
+
+  const formData = new FormData(this);
+
+  try{
+    const res = await fetch("/api/send-form", {
+      method: "POST",
+      body: formData
+    });
+
+    if(res.ok){
+      modal.classList.add("active");
+      this.reset();
+      fileName.textContent = "Cap arxiu seleccionat";
+      dniInput.style.borderColor = "#e2e2e2";
+      dniInput.style.background = "#fafafa";
+    } else {
+      alert("Error en l'enviament");
     }
 
-    const formData = new FormData(this);
+  } catch(err){
+    alert("Error de connexió");
+  }
 
-    try{
-      const res = await fetch("/api/send-form", {
-        method: "POST",
-        body: formData
-      });
-
-      if(res.ok){
-        modal.classList.add("active");
-        this.reset();
-        fileName.textContent = "Cap arxiu seleccionat";
-        dniInput.style.borderColor = "#e2e2e2";
-        dniInput.style.background = "#fafafa";
-      } else {
-        alert("Error en l'enviament");
-      }
-
-    } catch(err){
-      alert("Error de connexió");
-    }
-
-  });
-
+});
   // ===== TANCAR MODAL =====
   window.closeModal = function(){
     modal.classList.remove("active");
