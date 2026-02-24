@@ -68,19 +68,30 @@ export default async function handler(req, res) {
       },
     });
 
-    await transporter.sendMail({
-      from: `"Agència Foment Formació" <${process.env.EMAIL_USER}>`,
-      to: "jalejo@fomentformacio.com",
-      subject: "Nova inscripció Agència de Col·locació",
-      html: "<p>Nova inscripció rebuda</p>",
 
-    });
 
-    const normalizeValue = (value) => {
-      if (Array.isArray(value)) value = value[0];
-      if (typeof value === "string") return value;
-      return "";
-    };
+ // Normalitzador per evitar arrays
+const normalizeValue = (value) => {
+  if (Array.isArray(value)) return value[0];
+  return value || "";
+};
+
+// Normalitzador per evitar arrays
+const normalizeValue = (value) => {
+  if (Array.isArray(value)) return value[0];
+  return value || "";
+};
+
+const nom = normalizeValue(fields.nom);
+const cognom1 = normalizeValue(fields.cognom1);
+const cognom2 = normalizeValue(fields.cognom2);
+
+await transporter.sendMail({
+  from: `"Agència Foment Formació" <${process.env.EMAIL_USER}>`,
+  to: "jalejo@fomentformacio.com",
+  subject: `Nova inscripció: ${nom} ${cognom1} ${cognom2}`,
+  text: "" // sense cos
+});
 
     const toUpper = (value) => normalizeValue(value).toUpperCase();
     const dataFormatada = normalizeValue(fields.dataNaixement).replace(/-/g, "");
